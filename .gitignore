@@ -105,3 +105,6 @@ dist
 
 # Uploads
 src/assets/uploads/
+mongo_data/
+.idea/
+.vscode/
