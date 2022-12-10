@@ -33,6 +33,7 @@
     "yup": "^0.32.9"
   },
   "devDependencies": {
+    "@faker-js/faker": "^7.6.0",
     "ava": "^5.0.1",
     "c8": "^7.12.0",
     "eslint": "^7.20.0",
@@ -55,6 +56,19 @@
   "lint-staged": {
     "src/**/**/*.js": [
       "npm run lint"
+    ]
+  },
+  "ava": {
+    "files": [
+      "tests/**/*.js"
+    ],
+    "concurrency": 5,
+    "failFast": true,
+    "failWithoutAssertions": false,
+    "verbose": true,
+    "nodeArguments": [
+      "--trace-deprecation",
+      "--napi-modules"
     ]
   }
 }
