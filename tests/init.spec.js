@@ -90,6 +90,7 @@ test('GET /dashboards returns correct response and status code', async (t) => {
 });
 
 
+
 test('POST /create-dashboard returns correct response and status code, non existing dashboard', async (t) => {
   const mock_user = {username: "admin", id: "6394753012ff010f4dfc3c12", email: "admin@example.com"};
   const token = jwtSign(mock_user);
@@ -99,25 +100,28 @@ test('POST /create-dashboard returns correct response and status code, non exist
       id: "639475b812ff010f4dfc3c22"
     }
   };
-  const {body, statusCode} = await t.context.got.post(`dashboards/create-dashboard?token=${token}`,
-   {json: dashboardToSave});
-
-  t.is(statusCode, 200); 
-  t.is(body.success, true); 
+  const postAttempt = await t.context.got.post(`dashboards/create-dashboard?token=${token}`,
+   dashboardToSave);
+  // check for successful post
+  t.is(postAttempt.body.success, true); 
+  // check for status code meaning success (200 - OK)
+  t.is(postAttempt.statusCode, 200); 
 });
 
 
 test('POST /create-dashboard returns correct response and status code, already existing dashboard', async (t) => {
-  const mock_user = {username: "admin", id: "6394753012ff010f4dfc3c12", email: "admin@example.com"};
+  // the user with the id below already has a dashboard with name dashboard4 (see below)
+  const mock_user = {username: "user1", id: "6394758712ff010f4dfc3c15", email: "user1@example.com"};
   const token = jwtSign(mock_user);
   const dashboardToSave = {
     json: {
+      // Already existing dashboard name, new arbitrary id
       name: "dashboard4",
       id: "639475b812ff010f4dfc3c22"
     }
   };
-  const {body, statusCode} = await t.context.got.post(`dashboards/create-dashboard?token=${token}`, {json: dashboardToSave});  
-  t.is(body.status, 409); 
-  t.is(body.message, 'A dashboard with that name already exists.')
-  t.is(statusCode, 200); 
+  const postAttempt = await t.context.got.post(`dashboards/create-dashboard?token=${token}`, dashboardToSave);  
+  t.is(postAttempt.body.status, 409); 
+  t.is(postAttempt.body.message, 'A dashboard with that name already exists.')
+  t.is(postAttempt.statusCode, 200); 
 });
