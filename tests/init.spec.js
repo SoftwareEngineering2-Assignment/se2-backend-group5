@@ -50,3 +50,72 @@ test.after.always(async (t) => {
 //   const {statusCode} = await t.context.got(`sources/sources?token=${token}`);
 //   t.is(statusCode, 200);
 // });
+
+
+test("POST /save-dashboard returns correct response and status code, when trying to change a user' s existing dashboard", async (t) => {
+  const mock_user = { id: "6394756112ff010f4dfc3c13", username: "master", email: "master@example.com"};
+  const token = jwtSign(mock_user);
+  // existing dashboard of the user with the id above
+  const changedDashboard = {
+    json: {
+      id: "639475b812ff010f4dfc3c20",
+      layout: [],
+      items: {},
+      nextId: 6
+    }
+  };
+  const {body, statusCode} = await t.context.got.post(`dashboards/save-dashboard?token=${token}`, changedDashboard);
+  t.is(body.success, true);
+  t.is(statusCode, 200);
+});
+
+test("POST /save-dashboard returns correct response and status code, when trying to change a user' s non existing dashboard", async (t) => {
+  const mock_user = { id: "6394756112ff010f4dfc3c13", username: "master", email: "master@example.com"};
+  const token = jwtSign(mock_user);
+  const changedDashboard = {
+    json: {
+      // id of a dashboard that does not belong to the user with the id above
+      id: "639475b812ff010f4dfc3c21",
+      layout: [],
+      items: {},
+      nextId: 6
+    }
+  };
+  const {body, statusCode} = await t.context.got.post(`dashboards/save-dashboard?token=${token}`, changedDashboard);
+  t.is(body.status, 409);
+  t.is(body.message, 'The selected dashboard has not been found.');
+  t.is(statusCode, 200);
+});
+
+test('POST /clone-dashboard returns correct response and status code for already existent dashboard name', async (t) => {
+  const mock_user = { id: "6394753012ff010f4dfc3c12", username: "admin", email: "admin@example.com"};
+  const token = jwtSign(mock_user);
+  const clonedDashboard = {
+    json: {
+      // the id of the dashboard that the user wants to clone
+      id: "639475b812ff010f4dfc3c21",
+      // user assigns a name to the cloned dashboard that is the name of one of their already owned dashboards
+      name: "dashboard2"
+    }
+  };
+  const {body, statusCode} = await t.context.got.post(`dashboards/clone-dashboard?token=${token}`, clonedDashboard);
+  t.is(body.status, 409);
+  t.is(body.message, 'A dashboard with that name already exists.');
+  t.is(statusCode, 200);
+});
+
+test('POST /clone-dashboard returns correct response and status code for new dashboard name', async (t) => {
+  const mock_user = { id: "6394753012ff010f4dfc3c12", username: "admin", email: "admin@example.com"};
+  const token = jwtSign(mock_user);
+  const clonedDashboard = {
+    json: {
+      // the id of the dashboard that the user wants to clone (the cloned dashboard must be one of their own)
+      dashboardId: "639475b812ff010f4dfc3c19",
+      // user assigns a name to the cloned dashboard that is not the same as another one of their's
+      name: "nonExistentNameOfDashboard"
+    }
+  };
+  const {body, statusCode} = await t.context.got.post(`dashboards/clone-dashboard?token=${token}`, clonedDashboard);
+  t.is(body.success, true);
+  t.is(statusCode, 200);
+});
