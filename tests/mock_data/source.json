@@ -20,5 +20,16 @@
     "vhost": "/cnn",
     "owner": "6394756112ff010f4dfc3c13",
     "createdAt": "2022-12-10T13:06:00"
+  },
+  {
+    "_id": "639475b812ff010f4dfc3c18",
+    "name": "source3",
+    "type": "cnn",
+    "url": "localhost/lalala",
+    "login": "lalala",
+    "passcode": "",
+    "vhost": "/",
+    "owner": "6394753012ff010f4dfc3c12",
+    "createdAt": "2022-12-10T13:06:00"
   }
 ]
