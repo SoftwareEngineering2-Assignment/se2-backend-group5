@@ -4,6 +4,7 @@ require('dotenv').config();
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
+const lodash = require('lodash');
 const test = require('ava').default;
 const got = require('got');
 const listen = require('test-listen');
@@ -47,5 +48,35 @@ test('GET /statistics returns correct response and status code', async (t) => {
 test('GET /sources returns correct response and status code', async (t) => {
   const token = jwtSign({id: 1});
   const {statusCode} = await t.context.got(`sources/sources?token=${token}`);
+  t.is(statusCode, 200);
+});
+
+/*
+ * Tests for route GET /dashboard
+ */
+test('GET /dashboard returns correct response and status code for a specific dashboard owned by an authorized user', async (t) => {
+  const mock_user = {username: "user1", id: "6394758712ff010f4dfc3c15", email: "user1@example.com"};
+  token = jwtSign(mock_user);
+  const {body, statusCode} = await t.context.got(`dashboards/dashboard?token=${token}&id=639475b812ff010f4dfc3c21`);
+  t.assert(body.success);
+  t.is(body.dashboard.id, '639475b812ff010f4dfc3c21');
+  t.is(statusCode, 200);
+});
+
+test('GET /dashboard returns correct response and status code for a non existing dashboard', async (t) => {
+  const mock_user = {username: "user1", id: "6394758712ff010f4dfc3c15", email: "user1@example.com"};
+  token = jwtSign(mock_user);
+  const {body, statusCode} = await t.context.got(`dashboards/dashboard?token=${token}&id=639475b812ff010f4dff3c21`);
+  t.is(body.status, 409);
+  t.is(body.message, 'The selected dashboard has not been found.');
+  t.is(statusCode, 200);
+});
+
+test('GET /dashboard returns correct response and status code for a specific dashboard owned by another user', async (t) => {
+  const mock_user = {username: "user1", id: "6394758712ff010f4dfc3c15", email: "user1@example.com"};
+  token = jwtSign(mock_user);
+  const {body, statusCode} = await t.context.got(`dashboards/dashboard?token=${token}&id=639475b812ff010f4dff3c20`);
+  t.is(body.status, 409);
+  t.is(body.message, 'The selected dashboard has not been found.');
   t.is(statusCode, 200);
 });
