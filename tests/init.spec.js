@@ -74,7 +74,7 @@ test('GET /sources returns correct response and status code', async (t) => {
   t.is(statusCode, 200);
 });
 
-test("POST /share-dashboard returns correct response and status code for a user's non existing dashboard", async (t) => {
+test.serial("POST /share-dashboard returns correct response and status code for a user's non existing dashboard", async (t) => {
   const mock_user = { id: "6394753012ff010f4dfc3c12", email: "admin@example.com", username: "admin"};
   const token = jwtSign(mock_user);
   dashboardToShare = {
@@ -90,7 +90,7 @@ test("POST /share-dashboard returns correct response and status code for a user'
   t.is(statusCode, 200);
 })
 
-test("POST /share-dashboard returns correct response and status code for a user's existing dashboard", async (t) => {
+test.serial("POST /share-dashboard returns correct response and status code for a user's existing dashboard", async (t) => {
   const mock_user = { id: "6394753012ff010f4dfc3c12", email: "admin@example.com", username: "admin"};
   const token = jwtSign(mock_user);
   
@@ -130,7 +130,7 @@ test("POST /share-dashboard returns correct response and status code for a user'
 })
 
 
-test('POST /delete-dashboard returns correct response and status code for non existent dashboard', async (t) => {
+test.serial('POST /delete-dashboard returns correct response and status code for non existent dashboard', async (t) => {
   const mock_user = { id: "6394753012ff010f4dfc3c12", username: "admin", email: "admin@example.com"};
   const token = jwtSign(mock_user);
   dashboardToDelete = {
@@ -146,7 +146,7 @@ test('POST /delete-dashboard returns correct response and status code for non ex
   t.is(statusCode, 200);
 })
 
-test('POST /delete-dashboard returns correct response and status code for an existent dashboard', async (t) => {
+test.serial('POST /delete-dashboard returns correct response and status code for an existent dashboard', async (t) => {
   const mock_user = { id: "6394753012ff010f4dfc3c12", username: "admin", email: "admin@example.com"};
   const token = jwtSign(mock_user);
   dashboardToDelete = {
