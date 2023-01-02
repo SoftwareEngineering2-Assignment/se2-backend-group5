@@ -1,0 +1,30 @@
+[
+  {
+    "_id": "6394753012ff010f4dfc3c12",
+    "email": "admin@example.com",
+    "username": "admin",
+    "password": "NnVp8isNWyHfyNMvqkmfjarQ",
+    "registrationDate": 1633860610000
+  },
+  {
+    "_id": "6394756112ff010f4dfc3c13",
+    "email": "master@example.com",
+    "username": "master",
+    "password": "7jKYuarG9WQ46pXo2n6ZwrFw",
+    "registrationDate": 1670672668537
+  },
+  {
+    "_id": "6394758712ff010f4dfc3c14",
+    "email": "nobody@example.com",
+    "username": "nobody",
+    "password": "BMoBQrgKsxEia2Pd9WZBqfwd",
+    "registrationDate": 1355271132000
+  },
+  {
+    "_id": "6394758712ff010f4dfc3c15",
+    "email": "user1@example.com",
+    "username": "user1",
+    "password": "UTh569fjYDtoBEWwff2kp3iE",
+    "registrationDate": 1669853532000
+  }
+]

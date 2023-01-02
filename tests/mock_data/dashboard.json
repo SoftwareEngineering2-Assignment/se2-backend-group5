@@ -1,0 +1,50 @@
+[
+  {
+    "_id": "639475b812ff010f4dfc3c18",
+    "name": "dashboard1",
+    "layout": [],
+    "items": {},
+    "nextId": 2,
+    "password": "V5xoMd7Qt%wt7cLatoVn4P3x",
+    "shared": false,
+    "views": 0,
+    "owner": "6394753012ff010f4dfc3c12",
+    "createdAt": "2022-12-10T13:06:00"
+  },
+  {
+    "_id": "639475b812ff010f4dfc3c19",
+    "name": "dashboard2",
+    "layout": [],
+    "items": {},
+    "nextId": 3,
+    "password": "SMx%WBzGcgTa@^5iyY46Lgmn",
+    "shared": true,
+    "views": 5,
+    "owner": "6394753012ff010f4dfc3c12",
+    "createdAt": "2022-12-10T13:06:00"
+  },
+  {
+    "_id": "639475b812ff010f4dfc3c20",
+    "name": "dashboard3",
+    "layout": [],
+    "items": {},
+    "nextId": 4,
+    "password": "gyigY2SUdzX3t^QEHc#ztS#p",
+    "shared": true,
+    "views": 10,
+    "owner": "6394756112ff010f4dfc3c13",
+    "createdAt": "2022-12-10T13:06:00"
+  },
+  {
+    "_id": "639475b812ff010f4dfc3c21",
+    "name": "dashboard4",
+    "layout": [],
+    "items": {},
+    "nextId": 5,
+    "password": "yf&&82%FPs7RHiTrZs@R%HiS",
+    "shared": false,
+    "views": 5,
+    "owner": "6394758712ff010f4dfc3c15",
+    "createdAt": "2022-12-10T13:06:00"
+  }
+]
