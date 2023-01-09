@@ -78,7 +78,7 @@ test.after.always(async (t) => {
 /*
  * Tests for route POST /change-source
  */
-test('POST /change-source returns correct response and status code for existing source owned by the user', async (t) => {
+test.serial('POST /change-source returns correct response and status code for existing source owned by the user', async (t) => {
   const mock_user = {username: "admin", id: "6394753012ff010f4dfc3c12", email: "admin@example.com"};
   token = jwtSign(mock_user);
   editted_source = {
@@ -97,7 +97,7 @@ test('POST /change-source returns correct response and status code for existing 
   t.assert(body.success);
 });
 
-test('POST /change-source returns correct response and status code for non existing source', async (t) => {
+test.serial('POST /change-source returns correct response and status code for non existing source', async (t) => {
   const mock_user = {username: "admin", id: "6394753012ff010f4dfc3c12", email: "admin@example.com"};
   token = jwtSign(mock_user);
   editted_source = {
@@ -114,7 +114,7 @@ test('POST /change-source returns correct response and status code for non exist
   t.is(body.message, 'The selected source has not been found.');
 });
 
-test('POST /change-source returns correct response and status code for existing source owned by the user when the user already has another source with the new name', async (t) => {
+test.serial('POST /change-source returns correct response and status code for existing source owned by the user when the user already has another source with the new name', async (t) => {
   const mock_user = {username: "admin", id: "6394753012ff010f4dfc3c12", email: "admin@example.com"};
   token = jwtSign(mock_user);
   editted_source = {
