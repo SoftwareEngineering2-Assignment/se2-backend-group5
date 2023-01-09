@@ -1,5 +1,6 @@
 /* eslint-disable import/no-unresolved */
 require('dotenv').config();
+const _ = require('lodash');
 
 const http = require('node:http');
 const fs = require('node:fs');
@@ -40,32 +41,56 @@ test.after.always(async (t) => {
 /*
  * Tests for route POST /users/authenticate
  */
-test('POST /authenticate returns correct response and status code for existing user and correct matching password', async (t) => {
+test.serial('POST /authenticate returns correct response and status code for existing user and correct matching password', async (t) => {
     const expected_user = {username: "admin", id: "6394753012ff010f4dfc3c12", email: "admin@example.com"};
     expected_token = jwtSign(expected_user);
     const {body, statusCode} = await t.context.got.post(`users/authenticate`,  {json: { username: "admin", password: "admin", }});
-    t.is(JSON.stringify(expected_user), JSON.stringify(body.user));
-    t.is(JSON.stringify(expected_token), JSON.stringify(body.token));
+    t.assert(_.isEqual(expected_user, body.user));
+    t.is(expected_token, body.token);
     t.is(statusCode, 200);
   });
 
-test('POST /authenticate returns correct response and status code for existing user and non matching password', async (t) => {
+test.serial('POST /authenticate returns correct response and status code for existing user and non matching password', async (t) => {
     const {body, statusCode} = await t.context.got.post(`users/authenticate`,  {json: { username: "admin", password: "12345", }});
     t.is(body.status, 401);
     t.is(body.message, 'Authentication Error: Password does not match!');
     t.is(statusCode, 200);
   });
 
-test('POST /authenticate returns correct response and status code for non existing user', async (t) => {
+test.serial('POST /authenticate returns correct response and status code for non existing user', async (t) => {
     const {body, statusCode} = await t.context.got.post(`users/authenticate`,  {json: { username: "non-existing", password: "12345", }});
     t.is(body.status, 401);
     t.is(body.message, 'Authentication Error: User not found.');
     t.is(statusCode, 200);
   });
+
+/*
+ * Tests for route POST /users/resetpassword
+ */
+test.serial('POST /resetpassword returns correct response and status code for existing user', async (t) => {
+    requesting_user = { username: "master" };
+    oldReset = await reset.findOne(requesting_user);
+    expected_token = jwtSign(requesting_user);
+    const {body, statusCode} = await t.context.got.post(`users/resetpassword`,  {json: requesting_user});
+    newReset = await reset.findOne(requesting_user);
+    t.is(newReset.token, expected_token);
+    t.not(oldReset.expireAt, newReset.expireAt);
+    t.assert(body.ok);
+    t.is(body.message, 'Forgot password e-mail sent.');
+    t.is(statusCode, 200);
+});
+
+test.serial('POST /resetpassword returns correct response and status code for non existing user', async (t) => {
+    const {body, statusCode} = await t.context.got.post(`users/resetpassword`,  {json: { username: "non-existing", }});
+    t.is(body.status, 404);
+    t.is(body.message, 'Resource Error: User not found.');
+    t.is(statusCode, 200);
+});
+
 /*
  * Tests for route POST /users/changepassword
  */
-test('POST /changepassword returns correct response and status code for existing user and valid reset token', async (t) => {
+test.serial('POST /changepassword returns correct response and status code for existing user and valid reset token', async (t) => {
     const requesting_user = { username: "master" };
     const mock_user = {username: "master", id: "6394756112ff010f4dfc3c13", email: "master@example.com"};
     const auth_token = jwtSign(mock_user);
@@ -81,7 +106,7 @@ test('POST /changepassword returns correct response and status code for existing
     t.is(statusCode, 200);
   });
 
-test('POST /changepassword returns correct response and status code for existing user without a reset token', async (t) => {
+test.serial('POST /changepassword returns correct response and status code for existing user without a reset token', async (t) => {
     const requesting_user = { username: "admin" };
     const mock_user = {username: "admin", id: "6394756112ff010f4dfc3c12", email: "admin@example.com"};
     const auth_token = jwtSign(mock_user);
@@ -97,7 +122,7 @@ test('POST /changepassword returns correct response and status code for existing
     t.is(statusCode, 200);
   });
 
-test('POST /changepassword returns correct response and status code for non-existing user', async (t) => {
+test.serial('POST /changepassword returns correct response and status code for non-existing user', async (t) => {
     const requesting_user = { username: "non-existing" };
     const mock_user = {username: "non-existing", id: "6394756112ff010f4dfc3f12", email: "non-existing@example.com"};
     const auth_token = jwtSign(mock_user);
@@ -109,7 +134,7 @@ test('POST /changepassword returns correct response and status code for non-exis
     t.is(statusCode, 200);
   });
 
-test('POST /changepassword returns correct response and status code for existing user without a given new password', async (t) => {
+test.serial('POST /changepassword returns correct response and status code for existing user without a given new password', async (t) => {
     const requesting_user = { username: "master" };
     const mock_user = {username: "master", id: "6394756112ff010f4dfc3c13", email: "master@example.com"};
     const auth_token = jwtSign(mock_user);
