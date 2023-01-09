@@ -3,28 +3,28 @@
     "_id": "6394753012ff010f4dfc3c12",
     "email": "admin@example.com",
     "username": "admin",
-    "password": "NnVp8isNWyHfyNMvqkmfjarQ",
+    "password": "$2a$10$sb.Mn1VlpSQiCJSYf2itlOEhWF0Fco6SZ8K0c33RGEzJy4kAMR6/K",
     "registrationDate": 1633860610000
   },
   {
     "_id": "6394756112ff010f4dfc3c13",
     "email": "master@example.com",
     "username": "master",
-    "password": "7jKYuarG9WQ46pXo2n6ZwrFw",
+    "password": "$2a$10$qr0bMDmAseDOZ8OV0rxr7u0W37uNEYRnsQC1D8bupPCyQ12PZlH7.",
     "registrationDate": 1670672668537
   },
   {
     "_id": "6394758712ff010f4dfc3c14",
     "email": "nobody@example.com",
     "username": "nobody",
-    "password": "BMoBQrgKsxEia2Pd9WZBqfwd",
+    "password": "$2a$10$UygAkZnxdTECFSS72uINP.HuUgXDGi.OrZsXi5GukhgNwphAbNMV.",
     "registrationDate": 1355271132000
   },
   {
     "_id": "6394758712ff010f4dfc3c15",
     "email": "user1@example.com",
     "username": "user1",
-    "password": "UTh569fjYDtoBEWwff2kp3iE",
+    "password": "$2a$10$zuhEFOIu9qppz2qGBHZ08.YQVhUKzeWPWOk.nJaOR8OK9OBU8ZzgS",
     "registrationDate": 1669853532000
   }
 ]
