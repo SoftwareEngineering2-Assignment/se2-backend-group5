@@ -40,3 +40,26 @@ test.after.always(async (t) => {
 test('should be successful', async (t) => {
     t.assert(true);
 });
+
+/*
+ * Tests for route POST /users/resetpassword
+ */
+test('POST /resetpassword returns correct response and status code for existing user', async (t) => {
+    requesting_user = { username: "master" };
+    oldReset = await reset.findOne(requesting_user);
+    expected_token = jwtSign(requesting_user);
+    const {body, statusCode} = await t.context.got.post(`users/resetpassword`,  {json: requesting_user});
+    newReset = await reset.findOne(requesting_user);
+    t.is(newReset.token, expected_token);
+    t.not(JSON.stringify(oldReset.expireAt), JSON.stringify(newReset.expireAt));
+    t.assert(body.ok);
+    t.is(body.message, 'Forgot password e-mail sent.');
+    t.is(statusCode, 200);
+  });
+
+test('POST /resetpassword returns correct response and status code for non existing user', async (t) => {
+    const {body, statusCode} = await t.context.got.post(`users/resetpassword`,  {json: { username: "non-existing", }});
+    t.is(body.status, 404);
+    t.is(body.message, 'Resource Error: User not found.');
+    t.is(statusCode, 200);
+  });
