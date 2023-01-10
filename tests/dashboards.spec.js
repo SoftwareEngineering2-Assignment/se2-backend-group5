@@ -40,3 +40,93 @@ test.after.always(async (t) => {
 test('should be successful', async (t) => {
     t.assert(true);
 });
+
+
+test.serial("POST /share-dashboard returns correct response and status code for a user's non existing dashboard", async (t) => {
+    const mock_user = { id: "6394753012ff010f4dfc3c12", email: "admin@example.com", username: "admin"};
+    const token = jwtSign(mock_user);
+    const dashboardToShare = {
+      json: {
+        // id of non existing dashboard for the user above
+        dashboardId: '639475b812ff010f4dfc3c22'
+      }
+    };
+  
+    const {body, statusCode} = await t.context.got.post(`dashboards/share-dashboard?token=${token}`, dashboardToShare);
+    t.is(body.status, 409);
+    t.is(body.message, 'The specified dashboard has not been found.')
+    t.is(statusCode, 200);
+  })
+  
+  test.serial("POST /share-dashboard returns correct response and status code for a user's existing dashboard", async (t) => {
+    const mock_user = { id: "6394753012ff010f4dfc3c12", email: "admin@example.com", username: "admin"};
+    const token = jwtSign(mock_user);
+    
+    // A dashboard's "shared" state can be toggled betrween true and false 
+    // Both cases are tested below: "not shared" -> "shared" and vice versa 
+    
+    // Case 1: unshared -> shared  
+    const dashboardToShare = {
+      json: {
+        // id of an existing dashboard (of the user above) to share
+        dashboardId: '639475b812ff010f4dfc3c18'
+      }
+    };
+  
+    const {body, statusCode} = await t.context.got.post(`dashboards/share-dashboard?token=${token}`, dashboardToShare);
+    // var {body, statusCode} = await t.context.got.post(`dashboards/share-dashboard?token=${token}`, dashboardToShare);
+    t.is(body.success, true);
+    // shared state should now be true
+    t.is(body.shared, true);
+    t.is(statusCode, 200);
+  
+  
+    // Case 2: shared -> unshared 
+    const dashboardToUnshare = {
+      json: {
+        // id of an existing dashboard (of the user above) to unshare
+        dashboardId: '639475b812ff010f4dfc3c19'
+      }
+    };
+    
+    
+    const objReturned = await t.context.got.post(`dashboards/share-dashboard?token=${token}`, dashboardToUnshare);
+
+  
+    t.is(objReturned.body.success, true);
+    // shared state should now be false
+    t.is(objReturned.body.shared, false);
+    t.is(objReturned.statusCode, 200);
+  })
+  
+  
+  test.serial('POST /delete-dashboard returns correct response and status code for non existent dashboard', async (t) => {
+    const mock_user = { id: "6394753012ff010f4dfc3c12", username: "admin", email: "admin@example.com"};
+    const token = jwtSign(mock_user);
+    const dashboardToDelete = {
+      json: {
+        // non existent dashboard id
+        id: "639475b812ff010f4dfc3c22"
+      }
+    }
+    const {body, statusCode} = await t.context.got.post(`dashboards/delete-dashboard?token=${token}`, dashboardToDelete);
+    
+    t.is(body.status, 409);
+    t.is(body.message, 'The selected dashboard has not been found.');
+    t.is(statusCode, 200);
+  })
+  
+  test.serial('POST /delete-dashboard returns correct response and status code for an existent dashboard', async (t) => {
+    const mock_user = { id: "6394753012ff010f4dfc3c12", username: "admin", email: "admin@example.com"};
+    const token = jwtSign(mock_user);
+    dashboardToDelete = {
+      json: {
+        // existent dashboard id
+        id: "639475b812ff010f4dfc3c19"
+      }
+    }
+    const {body, statusCode} = await t.context.got.post(`dashboards/delete-dashboard?token=${token}`, dashboardToDelete);
+    
+    t.is(body.success, true);
+    t.is(statusCode, 200);
+  })
