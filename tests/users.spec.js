@@ -37,10 +37,31 @@ test.after.always(async (t) => {
     await user.deleteMany({});
 });
 
-test('should be successful', async (t) => {
-    t.assert(true);
-});
+/*
+ * Tests for route POST /users/authenticate
+ */
+test('POST /authenticate returns correct response and status code for existing user and correct matching password', async (t) => {
+    const expected_user = {username: "admin", id: "6394753012ff010f4dfc3c12", email: "admin@example.com"};
+    expected_token = jwtSign(expected_user);
+    const {body, statusCode} = await t.context.got.post(`users/authenticate`,  {json: { username: "admin", password: "admin", }});
+    t.is(JSON.stringify(expected_user), JSON.stringify(body.user));
+    t.is(JSON.stringify(expected_token), JSON.stringify(body.token));
+    t.is(statusCode, 200);
+  });
 
+test('POST /authenticate returns correct response and status code for existing user and non matching password', async (t) => {
+    const {body, statusCode} = await t.context.got.post(`users/authenticate`,  {json: { username: "admin", password: "12345", }});
+    t.is(body.status, 401);
+    t.is(body.message, 'Authentication Error: Password does not match!');
+    t.is(statusCode, 200);
+  });
+
+test('POST /authenticate returns correct response and status code for non existing user', async (t) => {
+    const {body, statusCode} = await t.context.got.post(`users/authenticate`,  {json: { username: "non-existing", password: "12345", }});
+    t.is(body.status, 401);
+    t.is(body.message, 'Authentication Error: User not found.');
+    t.is(statusCode, 200);
+  });
 /*
  * Tests for route POST /users/changepassword
  */
@@ -64,7 +85,7 @@ test('POST /changepassword returns correct response and status code for existing
     const requesting_user = { username: "admin" };
     const mock_user = {username: "admin", id: "6394756112ff010f4dfc3c12", email: "admin@example.com"};
     const auth_token = jwtSign(mock_user);
-    const original_user = await user.findOne(requesting_user).select('+password');    
+    const original_user = await user.findOne(requesting_user).select('+password');
     t.not(original_user, null);
     const reset_token = await reset.findOne(requesting_user);
     t.is(reset_token, null);
@@ -92,7 +113,7 @@ test('POST /changepassword returns correct response and status code for existing
     const requesting_user = { username: "master" };
     const mock_user = {username: "master", id: "6394756112ff010f4dfc3c13", email: "master@example.com"};
     const auth_token = jwtSign(mock_user);
-    const original_user = await user.findOne(requesting_user).select('+password');    
+    const original_user = await user.findOne(requesting_user).select('+password');
     t.not(original_user, null);
     const reset_token = await reset.findOne(requesting_user);
     t.not(reset_token, null);
