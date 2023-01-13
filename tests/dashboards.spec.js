@@ -119,7 +119,7 @@ test.serial("POST /share-dashboard returns correct response and status code for 
   test.serial('POST /delete-dashboard returns correct response and status code for an existent dashboard', async (t) => {
     const mock_user = { id: "6394753012ff010f4dfc3c12", username: "admin", email: "admin@example.com"};
     const token = jwtSign(mock_user);
-    dashboardToDelete = {
+    const dashboardToDelete = {
       json: {
         // existent dashboard id
         id: "639475b812ff010f4dfc3c19"
