@@ -135,8 +135,8 @@ test.serial('POST /changepassword returns correct response and status code for n
   });
 
 test.serial('POST /changepassword returns correct response and status code for existing user without a given new password', async (t) => {
-    const requesting_user = { username: "master" };
-    const mock_user = {username: "master", id: "6394756112ff010f4dfc3c13", email: "master@example.com"};
+    const requesting_user = { username: "nobody" };
+    const mock_user = {username: "nobody", id: "6394756112ff010f4dfc3c14", email: "nobody@example.com"};
     const auth_token = jwtSign(mock_user);
     const original_user = await user.findOne(requesting_user).select('+password');
     t.not(original_user, null);
