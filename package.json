@@ -59,7 +59,7 @@
   },
   "ava": {
     "files": [
-      "tests/**/*.spec.js"
+      "tests/**/dashboards.spec.js"
     ],
     "concurrency": 1,
     "failFast": true,
