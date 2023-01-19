@@ -68,11 +68,11 @@ test.serial('POST /authenticate returns correct response and status code for non
  * Tests for route POST /users/resetpassword
  */
 test.serial('POST /resetpassword returns correct response and status code for existing user', async (t) => {
-    requesting_user = { username: "master" };
-    oldReset = await reset.findOne(requesting_user);
-    expected_token = jwtSign(requesting_user);
+    let requesting_user = { username: "master" };
+    let oldReset = await reset.findOne(requesting_user);
+    let expected_token = jwtSign(requesting_user);
     const {body, statusCode} = await t.context.got.post(`users/resetpassword`,  {json: requesting_user});
-    newReset = await reset.findOne(requesting_user);
+    let newReset = await reset.findOne(requesting_user);
     t.is(newReset.token, expected_token);
     t.not(oldReset.expireAt, newReset.expireAt);
     t.assert(body.ok);
