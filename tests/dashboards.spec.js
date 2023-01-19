@@ -41,7 +41,40 @@ test('should be successful', async (t) => {
     t.assert(true);
 });
 
+/*
+ * Tests for route GET /dashboard
+ */
+test.serial('GET /dashboard returns correct response and status code for a specific dashboard owned by an authorized user', async (t) => {
+  const mock_user = {username: "user1", id: "6394758712ff010f4dfc3c15", email: "user1@example.com"};
+  const token = jwtSign(mock_user);
+  const {body, statusCode} = await t.context.got(`dashboards/dashboard?token=${token}&id=639475b812ff010f4dfc3c21`);
+  t.assert(body.success);
+  t.is(body.dashboard.id, '639475b812ff010f4dfc3c21');
+  t.is(statusCode, 200);
+});
 
+test.serial('GET /dashboard returns correct response and status code for a non existing dashboard', async (t) => {
+  const mock_user = {username: "user1", id: "6394758712ff010f4dfc3c15", email: "user1@example.com"};
+  const token = jwtSign(mock_user);
+  const {body, statusCode} = await t.context.got(`dashboards/dashboard?token=${token}&id=639475b812ff010f4dff3c21`);
+  t.is(body.status, 409);
+  t.is(body.message, 'The selected dashboard has not been found.');
+  t.is(statusCode, 200);
+});
+
+test.serial('GET /dashboard returns correct response and status code for a specific dashboard owned by another user', async (t) => {
+  const mock_user = {username: "user1", id: "6394758712ff010f4dfc3c15", email: "user1@example.com"};
+  const token = jwtSign(mock_user);
+  const {body, statusCode} = await t.context.got(`dashboards/dashboard?token=${token}&id=639475b812ff010f4dff3c20`);
+  t.is(body.status, 409);
+  t.is(body.message, 'The selected dashboard has not been found.');
+  t.is(statusCode, 200);
+});
+
+
+/*
+ * Tests for route POST /share-dashboard
+ */
 test.serial("POST /share-dashboard returns correct response and status code for a user's non existing dashboard", async (t) => {
     const mock_user = { id: "6394753012ff010f4dfc3c12", email: "admin@example.com", username: "admin"};
     const token = jwtSign(mock_user);
@@ -58,7 +91,7 @@ test.serial("POST /share-dashboard returns correct response and status code for 
     t.is(statusCode, 200);
   })
   
-  test.serial("POST /share-dashboard returns correct response and status code for a user's existing dashboard", async (t) => {
+test.serial("POST /share-dashboard returns correct response and status code for a user's existing dashboard", async (t) => {
     const mock_user = { id: "6394753012ff010f4dfc3c12", email: "admin@example.com", username: "admin"};
     const token = jwtSign(mock_user);
     
@@ -99,8 +132,10 @@ test.serial("POST /share-dashboard returns correct response and status code for 
     t.is(objReturned.statusCode, 200);
   })
   
-  
-  test.serial('POST /delete-dashboard returns correct response and status code for non existent dashboard', async (t) => {
+/*
+ * Tests for route POST /delete-dashboard
+ */  
+test.serial('POST /delete-dashboard returns correct response and status code for non existent dashboard', async (t) => {
     const mock_user = { id: "6394753012ff010f4dfc3c12", username: "admin", email: "admin@example.com"};
     const token = jwtSign(mock_user);
     const dashboardToDelete = {
@@ -116,7 +151,7 @@ test.serial("POST /share-dashboard returns correct response and status code for 
     t.is(statusCode, 200);
   })
   
-  test.serial('POST /delete-dashboard returns correct response and status code for an existent dashboard', async (t) => {
+test.serial('POST /delete-dashboard returns correct response and status code for an existent dashboard', async (t) => {
     const mock_user = { id: "6394753012ff010f4dfc3c12", username: "admin", email: "admin@example.com"};
     const token = jwtSign(mock_user);
     const dashboardToDelete = {
