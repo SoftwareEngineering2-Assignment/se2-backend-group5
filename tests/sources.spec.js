@@ -1,5 +1,7 @@
 /* eslint-disable import/no-unresolved */
 require('dotenv').config();
+const lodash = require('lodash');
+
 
 const http = require('node:http');
 const fs = require('node:fs');
@@ -53,7 +55,7 @@ test('GET /sources returns correct response and status code', async (t) => {
   });
   
 test('GET /sources returns correct response and status code for user admin', async (t) => {
-    token = jwtSign({username: "admin", id: "6394753012ff010f4dfc3c12", email: "admin@example.com"});
+    const token = jwtSign({username: "admin", id: "6394753012ff010f4dfc3c12", email: "admin@example.com"});
     const {body, statusCode} = await t.context.got(`sources/sources?token=${token}`);
     const expected_source = [
       {
