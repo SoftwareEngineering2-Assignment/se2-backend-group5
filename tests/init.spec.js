@@ -37,3 +37,16 @@ test.after.always(async (t) => {
   await source.deleteMany({});
   await user.deleteMany({});
 });
+
+// test('GET /statistics returns correct response and status code', async (t) => {
+//   const {body, statusCode} = await t.context.got('general/statistics');
+//   t.is(body.sources, (JSON.parse(fs.readFileSync(path.join(path.dirname(__filename), 'mock_data/source.json'), {encoding: 'utf8'}))).length);
+//   t.assert(body.success);
+//   t.is(statusCode, 200);
+// });
+
+// test('GET /sources returns correct response and status code', async (t) => {
+//   const token = jwtSign({id: 1});
+//   const {statusCode} = await t.context.got(`sources/sources?token=${token}`);
+//   t.is(statusCode, 200);
+// });
