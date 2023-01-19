@@ -1,5 +1,7 @@
 /* eslint-disable import/no-unresolved */
 require('dotenv').config();
+const lodash = require('lodash');
+
 
 const http = require('node:http');
 const fs = require('node:fs');
@@ -40,3 +42,39 @@ test.after.always(async (t) => {
 test('should be successful', async (t) => {
     t.assert(true);
 });
+
+/*
+ *  Tests for route GET /sources
+ */
+test('GET /sources returns correct response and status code', async (t) => {
+    const token = jwtSign({id: 1});
+    const {body, statusCode} = await t.context.got(`sources/sources?token=${token}`);
+    t.is(statusCode, 200);
+    t.assert(body.success);
+    // t.is(body.sources, []);
+  });
+  
+test('GET /sources returns correct response and status code for user admin', async (t) => {
+    const token = jwtSign({username: "admin", id: "6394753012ff010f4dfc3c12", email: "admin@example.com"});
+    const {body, statusCode} = await t.context.got(`sources/sources?token=${token}`);
+    const expected_source = [
+      {
+        id: "639475b812ff010f4dfc3c16",      
+        name: "source1",      
+        type: "news",
+        url: "localhost/lalala", 
+        login: "lalala",
+        passcode: "",
+        vhost: "/",
+        active: false,
+      },
+    ];
+    t.assert(lodash.isEqual(body.sources, expected_source));
+    t.is(statusCode, 200);
+  });
+  
+test('GET /sources returns correct response and status code for unauthenticated user', async (t) => {
+    const {body, statusCode} = await t.context.got(`sources/sources`);
+    t.is(statusCode, 403);
+    t.is(body.message, 'Authorization Error: token missing.');
+  });
