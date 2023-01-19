@@ -43,7 +43,7 @@ test.after.always(async (t) => {
  */
 test.serial('POST /authenticate returns correct response and status code for existing user and correct matching password', async (t) => {
     const expected_user = {username: "admin", id: "6394753012ff010f4dfc3c12", email: "admin@example.com"};
-    expected_token = jwtSign(expected_user);
+    let expected_token = jwtSign(expected_user);
     const {body, statusCode} = await t.context.got.post(`users/authenticate`,  {json: { username: "admin", password: "admin", }});
     t.assert(_.isEqual(expected_user, body.user));
     t.is(expected_token, body.token);
