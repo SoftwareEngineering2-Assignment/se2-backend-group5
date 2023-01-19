@@ -131,40 +131,7 @@ test.serial("POST /share-dashboard returns correct response and status code for 
     t.is(objReturned.body.shared, false);
     t.is(objReturned.statusCode, 200);
   })
-  
-/*
- * Tests for route POST /delete-dashboard
- */  
-test.serial('POST /delete-dashboard returns correct response and status code for non existent dashboard', async (t) => {
-    const mock_user = { id: "6394753012ff010f4dfc3c12", username: "admin", email: "admin@example.com"};
-    const token = jwtSign(mock_user);
-    const dashboardToDelete = {
-      json: {
-        // non existent dashboard id
-        id: "639475b812ff010f4dfc3c22"
-      }
-    }
-    const {body, statusCode} = await t.context.got.post(`dashboards/delete-dashboard?token=${token}`, dashboardToDelete);
-    
-    t.is(body.status, 409);
-    t.is(body.message, 'The selected dashboard has not been found.');
-    t.is(statusCode, 200);
-  })
-  
-test.serial('POST /delete-dashboard returns correct response and status code for an existent dashboard', async (t) => {
-    const mock_user = { id: "6394753012ff010f4dfc3c12", username: "admin", email: "admin@example.com"};
-    const token = jwtSign(mock_user);
-    const dashboardToDelete = {
-      json: {
-        // existent dashboard id
-        id: "639475b812ff010f4dfc3c19"
-      }
-    }
-    const {body, statusCode} = await t.context.got.post(`dashboards/delete-dashboard?token=${token}`, dashboardToDelete);
-    
-    t.is(body.success, true);
-    t.is(statusCode, 200);
-  })
+
 
 test.serial("/POST change password returns correct response and status code of a user's existing dashboard", async (t) => {
     const mock_user = {id: "6394753012ff010f4dfc3c12", username: "admin", email: "admin@example.com"};
@@ -181,7 +148,7 @@ test.serial("/POST change password returns correct response and status code of a
     t.is(statusCode, 200);
 })
 
-test("/POST change password returns correct response and status code for a user's non existing dashboard", async (t) => {
+test.serial("/POST change password returns correct response and status code for a user's non existing dashboard", async (t) => {
     const mock_user = {id: "6394753012ff010f4dfc3c12", username: "admin", email:  "admin@example.com"};
     const token = jwtSign(mock_user);
     // dashboard that does not belong to the user. Attempt to change its password
@@ -198,11 +165,7 @@ test("/POST change password returns correct response and status code for a user'
     t.is(statusCode, 200);
 })
 
-
-
-
-
-test("POST /save-dashboard returns correct response and status code, when trying to change a user' s existing dashboard", async (t) => {
+test.serial("POST /save-dashboard returns correct response and status code, when trying to change a user' s existing dashboard", async (t) => {
     const mock_user = { id: "6394756112ff010f4dfc3c13", username: "master", email: "master@example.com"};
     const token = jwtSign(mock_user);
     // existing dashboard of the user with the id above
@@ -219,7 +182,7 @@ test("POST /save-dashboard returns correct response and status code, when trying
     t.is(statusCode, 200);
   });
 
-  test("POST /save-dashboard returns correct response and status code, when trying to change a user' s non existing dashboard", async (t) => {
+  test.serial("POST /save-dashboard returns correct response and status code, when trying to change a user' s non existing dashboard", async (t) => {
     const mock_user = { id: "6394756112ff010f4dfc3c13", username: "master", email: "master@example.com"};
     const token = jwtSign(mock_user);
     const changedDashboard = {
@@ -237,13 +200,13 @@ test("POST /save-dashboard returns correct response and status code, when trying
     t.is(statusCode, 200);
   });
 
-  test('POST /clone-dashboard returns correct response and status code for already existent dashboard name', async (t) => {
+  test.serial('POST /clone-dashboard returns correct response and status code for already existent dashboard name', async (t) => {
     const mock_user = { id: "6394753012ff010f4dfc3c12", username: "admin", email: "admin@example.com"};
     const token = jwtSign(mock_user);
     const clonedDashboard = {
       json: {
         // the id of the dashboard that the user wants to clone
-        id: "639475b812ff010f4dfc3c21",
+        dashboardId: "639475b812ff010f4dfc3c21",
         // user assigns a name to the cloned dashboard that is the name of one of their already owned dashboards
         name: "dashboard2"
       }
@@ -254,7 +217,7 @@ test("POST /save-dashboard returns correct response and status code, when trying
     t.is(statusCode, 200);
   });
 
-  test('POST /clone-dashboard returns correct response and status code for new dashboard name', async (t) => {
+  test.serial('POST /clone-dashboard returns correct response and status code for new dashboard name', async (t) => {
     const mock_user = { id: "6394753012ff010f4dfc3c12", username: "admin", email: "admin@example.com"};
     const token = jwtSign(mock_user);
     const clonedDashboard = {
@@ -269,3 +232,38 @@ test("POST /save-dashboard returns correct response and status code, when trying
     t.is(body.success, true);
     t.is(statusCode, 200);
   });
+
+
+/*
+ * Tests for route POST /delete-dashboard
+ */
+test.serial('POST /delete-dashboard returns correct response and status code for non existent dashboard', async (t) => {
+    const mock_user = { id: "6394753012ff010f4dfc3c12", username: "admin", email: "admin@example.com"};
+    const token = jwtSign(mock_user);
+    const dashboardToDelete = {
+        json: {
+            // non existent dashboard id
+            id: "639475b812ff010f4dfc3c22"
+        }
+    }
+    const {body, statusCode} = await t.context.got.post(`dashboards/delete-dashboard?token=${token}`, dashboardToDelete);
+
+    t.is(body.status, 409);
+    t.is(body.message, 'The selected dashboard has not been found.');
+    t.is(statusCode, 200);
+})
+
+test.serial('POST /delete-dashboard returns correct response and status code for an existent dashboard', async (t) => {
+    const mock_user = { id: "6394753012ff010f4dfc3c12", username: "admin", email: "admin@example.com"};
+    const token = jwtSign(mock_user);
+    const dashboardToDelete = {
+        json: {
+            // existent dashboard id
+            id: "639475b812ff010f4dfc3c19"
+        }
+    }
+    const {body, statusCode} = await t.context.got.post(`dashboards/delete-dashboard?token=${token}`, dashboardToDelete);
+
+    t.is(body.success, true);
+    t.is(statusCode, 200);
+})
