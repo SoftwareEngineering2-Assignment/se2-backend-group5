@@ -40,3 +40,26 @@ test.after.always(async (t) => {
 test('should be successful', async (t) => {
     t.assert(true);
 });
+
+test('GET /test-url returns correct response and status code for existing url', async (t) => {
+    // test that a client can visit some existing url (external of our own routes)
+    const urlToTest ='https://en.wikipedia.org/wiki/Software_engineering';
+    
+    const {body, statusCode} = await t.context.got(`general/test-url?url=${urlToTest}`);
+    t.is(body.status, 200);
+    t.is(body.active, true);
+    t.is(statusCode, 200);
+});
+
+test('GET /test-url returns correct response and status code for non existing url', async (t) => {
+    // non existing url
+    const urlToTest = 'httfgbfgbps://en.wikrdrneditna.org/wtymtfmhiki/Softwdrare_edrndtyngineering';
+    const {body, statusCode} = await t.context.got(`general/test-url?url=${urlToTest}`);
+    
+    t.is(body.status, 500);
+    t.is(body.active, false);
+    t.is(statusCode, 200);
+});
+
+
+
