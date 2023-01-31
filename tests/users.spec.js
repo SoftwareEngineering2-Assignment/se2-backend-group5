@@ -147,3 +147,35 @@ test.serial('POST /changepassword returns correct response and status code for e
     t.is(body.message, 'Validation Error: password is a required field');
     t.is(statusCode, 400);
   });
+
+test.serial("POST /create users should be able to signup", async (t) => {
+    const req = {
+        json: {
+            username: 'happyCase',
+            password: 'lalalala',
+            email: 'happyCase@example.com'
+        }
+    };
+    const resp = await user.findOne({username: 'happyCase'});
+    t.is(resp, null);
+    const {body, statusCode} = await t.context.got.post('users/create', req);
+    t.is(statusCode, 200);
+    t.is(body.success, true);
+    const userCreated = await user.findOne({username: 'happyCase'}).select('+_id');
+    t.is(userCreated._id.toString(), body.id);
+});
+test.serial("POST /create users should be able to signup, unhappy case, user exists", async (t) => {
+    const req = {
+        json: {
+            username: 'nobody',
+            password: 'lalalala',
+            email: 'nobody@example.com'
+        }
+    };
+    const resp = await user.findOne({username: 'nobody'});
+    t.not(resp, null);
+    const {body, statusCode} = await t.context.got.post('users/create', req);
+    t.is(statusCode, 200);
+    t.is(body.status, 409);
+    t.is(body.message, 'Registration Error: A user with that e-mail or username already exists.')
+});
