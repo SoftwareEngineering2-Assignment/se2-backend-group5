@@ -48,16 +48,16 @@ test.serial('GET /sources returns correct response and status code', async (t) =
     t.assert(body.success);
     // t.is(body.sources, []);
   });
-  
+
 test.serial('GET /sources returns correct response and status code for user admin', async (t) => {
     const token = jwtSign({username: "admin", id: "6394753012ff010f4dfc3c12", email: "admin@example.com"});
     const {body, statusCode} = await t.context.got(`sources/sources?token=${token}`);
     const expected_source = [
       {
-        id: "639475b812ff010f4dfc3c16",      
-        name: "source1",      
+        id: "639475b812ff010f4dfc3c16",
+        name: "source1",
         type: "news",
-        url: "localhost/lalala", 
+        url: "localhost/lalala",
         login: "lalala",
         passcode: "",
         vhost: "/",
@@ -68,7 +68,7 @@ test.serial('GET /sources returns correct response and status code for user admi
     t.assert(lodash.isEqual(sources, expected_source));
     t.is(statusCode, 200);
   });
-  
+
 test.serial('GET /sources returns correct response and status code for unauthenticated user', async (t) => {
     const {body, statusCode} = await t.context.got(`sources/sources`);
     t.is(statusCode, 403);
@@ -130,3 +130,48 @@ test.serial('POST /change-source returns correct response and status code for ex
     t.is(body.status, 409);
     t.is(body.message, 'A source with the same name has been found.');
   });
+
+
+test.serial('POST /delete-source, users should be able to delete their sources', async(t) => {
+    const admin = {username: 'admin', id: '6394753012ff010f4dfc3c12', email: 'admin@example.com'};
+    const jwt = jwtSign(admin);
+    const req = {
+        json: {
+            id: '639475b812ff010f4dfc3c16'
+        }
+    };
+    const {body, statusCode} = await t.context.got.post(`sources/delete-source?token=${jwt}`, req);
+    t.is(body.success, true);
+    t.is(statusCode, 200);
+    const resp = await source.findOne({_id: mongoose.Types.ObjectId(req.json.id)});
+    t.is(resp, null);
+});
+
+test.serial('POST /delete-source, users should be able to delete their sources, dashboard not found', async(t) => {
+    const admin = {username: 'admin', id: '6394753012ff010f4dfc3c12', email: 'admin@example.com'};
+    const jwt = jwtSign(admin);
+    const req = {
+        json: {
+            id: '639475b812ff010f4dfc3c20'
+        }
+    };
+    const {body, statusCode} = await t.context.got.post(`sources/delete-source?token=${jwt}`, req);
+    t.is(body.status, 409);
+    t.is(body.message, 'The selected source has not been found.');
+    t.is(statusCode, 200);
+});
+test.serial('POST /delete-source, users should be able to delete their sources, incorrect owner', async(t) => {
+    const admin = {username: 'admin', id: '6394753012ff010f4dfc3c12', email: 'admin@example.com'};
+    const jwt = jwtSign(admin);
+    const req = {
+        json: {
+            id: '639475b812ff010f4dfc3c17'
+        }
+    };
+    const {body, statusCode} = await t.context.got.post(`sources/delete-source?token=${jwt}`, req);
+    t.is(body.status, 409);
+    t.is(body.message, 'The selected source has not been found.');
+    t.is(statusCode, 200);
+    const dbSource = await source.findOne({_id: mongoose.Types.ObjectId(req.json.id)});
+    t.not(dbSource.owner, admin.id);
+});
