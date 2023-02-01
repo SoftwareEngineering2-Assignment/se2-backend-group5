@@ -7,6 +7,7 @@ const path = require('node:path');
 const test = require('ava').default;
 const got = require('got');
 const listen = require('test-listen');
+const process = require('node:process');
 
 const mongoose = require('mongoose');
 const app = require('../src/index');
@@ -101,7 +102,6 @@ test('GET /test-url-request returns correct response and status code for POST so
         params: ""
     };
     const {body, statusCode} = await t.context.got(`general/test-url-request?url=${url}&type=${type}&body=${JSON.stringify(bodyParams)}`);
-    console.log(body);
     t.is(statusCode, 200);
     t.is(body.status, 200);
 });
