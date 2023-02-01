@@ -2,16 +2,13 @@
 require('dotenv').config();
 
 const http = require('node:http');
-const fs = require('node:fs');
-const path = require('node:path');
-const lodash = require('lodash');
+
 const test = require('ava').default;
 const got = require('got');
 const listen = require('test-listen');
 
 const mongoose = require('mongoose');
 const app = require('../src/index');
-const {jwtSign} = require('../src/utilities/authentication/helpers');
 const dashboard = require('../src/models/dashboard');
 const reset = require('../src/models/reset');
 const source = require('../src/models/source');
