@@ -37,9 +37,12 @@ test.after.always(async (t) => {
     await user.deleteMany({});
 });
 
-test('should be successful', async (t) => {
-    t.assert(true);
-});
+test('GET /statistics returns correct response and status code', async (t) => {
+    const {body, statusCode} = await t.context.got('general/statistics');
+    t.is(body.sources, (JSON.parse(fs.readFileSync(path.join(path.dirname(__filename), 'mock_data/source.json'), {encoding: 'utf8'}))).length);
+    t.assert(body.success);
+    t.is(statusCode, 200);
+  });
 
 test('GET /test-url returns correct response and status code for existing url', async (t) => {
     // test that a client can visit some existing url (external of our own routes)
