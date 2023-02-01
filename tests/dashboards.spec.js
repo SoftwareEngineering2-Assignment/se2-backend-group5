@@ -133,7 +133,7 @@ test.serial("POST /share-dashboard returns correct response and status code for 
   })
 
 
-test.serial("/POST change password returns correct response and status code of a user's existing dashboard", async (t) => {
+test.serial("POST /change password returns correct response and status code of a user's existing dashboard", async (t) => {
     const mock_user = {id: "6394753012ff010f4dfc3c12", username: "admin", email: "admin@example.com"};
     const token = jwtSign(mock_user)
     // user's dashboard whose password they want to change
@@ -148,7 +148,7 @@ test.serial("/POST change password returns correct response and status code of a
     t.is(statusCode, 200);
 })
 
-test.serial("/POST change password returns correct response and status code for a user's non existing dashboard", async (t) => {
+test.serial("POST /change password returns correct response and status code for a user's non existing dashboard", async (t) => {
     const mock_user = {id: "6394753012ff010f4dfc3c12", username: "admin", email:  "admin@example.com"};
     const token = jwtSign(mock_user);
     // dashboard that does not belong to the user. Attempt to change its password
