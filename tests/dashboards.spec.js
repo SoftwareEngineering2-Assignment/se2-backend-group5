@@ -71,10 +71,255 @@ test.serial('GET /dashboard returns correct response and status code for a speci
   t.is(statusCode, 200);
 });
 
+/*
+ * Tests for route POST /check-password-needed
+ */
+
+test.serial("POST /check-password-needed returns correct response and status code for non existing dashboard", async (t) => {
+    const userAndDashboardObj = {
+        json:
+            {
+                user:
+                    {
+                        id: '6394753012ff010f4dfc3c12',
+                        name: 'admin',
+                        email: 'admin@example.com'
+                    },
+                // id of dashboard non existing in database
+                dashboardId : '639475b812ff010f4dfc3005'
+            }
+    };
+
+    const {body, statusCode} = await t.context.got.post(`dashboards/check-password-needed`, userAndDashboardObj);
+
+    t.is(body.status, 409);
+    t.is(body.message, 'The specified dashboard has not been found.');
+    t.is(statusCode, 200);
+});
+
+
+test.serial("POST /check-password-needed returns correct response and status code for existing dashboard", async (t) => {
+    const userAndDashboardObj = {
+        json:
+            {
+                user:
+                    {
+                        'id': '6394753012ff010f4dfc3c12',
+                        'name': 'admin',
+                        'email': 'admin@example.com'
+                    },
+                // id of dashboard existing in database that
+                // belongs to the user above.
+                'dashboardId' : '639475b812ff010f4dfc3c18'
+            }
+    };
+
+    // dashboard before refers to the dashboard views before and after the route is accessed
+    const dashboardBefore = await dashboard.findOne({_id: mongoose.Types.ObjectId(userAndDashboardObj.json.dashboardId)});
+    const hasPassword = (dashboardBefore.password !== null);
+
+    const {body, statusCode} = await t.context.got.post(`dashboards/check-password-needed`, userAndDashboardObj);
+
+
+    const dashboardAfter = await dashboard.findOne({_id: mongoose.Types.ObjectId(userAndDashboardObj.json.dashboardId)});
+    const dashboardThatShouldBeReturned = await
+        dashboard.findOne({_id: mongoose.Types.ObjectId(userAndDashboardObj.json.dashboardId)})
+            .select({_id: false}).select({items: 1, layout: 1, name: 1});
+    // Check if the views of the dashboard actually increased
+    t.is(dashboardAfter.views, dashboardBefore.views + 1);
+
+    t.is(body.success, true);
+    t.is(body.owner, 'self');
+    t.is(body.shared, dashboardBefore.shared);
+    t.is(body.hasPassword, hasPassword);
+    // the route increases the views of the dashboard so the comparison is between the dashboard
+    // after the access of the url and
+    // and the dashboard returned by the json.
+    const dashboardThatShouldBeReturnedStringified = JSON.parse(JSON.stringify(dashboardThatShouldBeReturned));
+    console.log(dashboardThatShouldBeReturnedStringified, body.dashboard)
+    t.deepEqual(body.dashboard, dashboardThatShouldBeReturnedStringified);
+    t.is(statusCode, 200);
+});
+
+test.serial("POST /check-password-needed returns correct response and status code for existing dashboard that is not shared", async (t) => {
+    const userAndDashboardObj = {
+        json:
+            {
+                //  user that does not own the dashboard below
+                user:
+                    {
+                        'id': '6394756112ff010f4dfc3c13',
+                        'name': 'master',
+                        'email': "master@example.com"
+                    },
+                // id of dashboard existing in database that does not
+                // belong to the user above and is not shared.
+                'dashboardId' : '639475b812ff010f4dfc3c18'
+            }
+    };
+
+    const {body, statusCode} = await t.context.got.post(`dashboards/check-password-needed`, userAndDashboardObj);
+    t.is(body.success, true);
+    t.is(body.owner, '');
+    t.is(body.shared, false);
+    t.is(statusCode, 200);
+});
+
+test.serial("POST /check-password-needed returns correct response and status code for existing dashboard without a password", async (t) => {
+    const userAndDashboardObj = {
+        json:
+            {
+                //  user that does not own the dashboard below
+                user:
+                    {
+                        'id': '6394753012ff010f4dfc3c13',
+                        'name': 'master',
+                        'email': "master@example.com"
+                    },
+                // id of dashboard existing in database that does not
+                // belong to the user above, is not shared and has a password.
+                'dashboardId' : '63da6f5929bf85395cb4bcb8'
+            }
+    };
+
+    const dashboardBefore = await dashboard.findOne({_id: mongoose.Types.ObjectId(userAndDashboardObj.json.dashboardId)});
+    const {body, statusCode} = await t.context.got.post(`dashboards/check-password-needed`, userAndDashboardObj);
+
+    const dashboardAfter = await dashboard.findOne({_id: mongoose.Types.ObjectId(userAndDashboardObj.json.dashboardId)});
+    t.is(dashboardAfter.views, dashboardBefore.views + 1);
+
+    t.is(body.success, true);
+
+    const ownerStringified = JSON.parse(JSON.stringify(dashboardBefore.owner));
+    t.is(body.owner, ownerStringified);
+    t.is(body.shared, true);
+    t.is(body.passwordNeeded, false);
+
+    // check if the dashboard returned is the one that is actually in base.
+    const dashboardThatShouldBeReturned = await dashboard.
+    findOne({_id: mongoose.Types.ObjectId("63da6f5929bf85395cb4bcb8")})
+        .select({_id: false})
+        .select({items: 1, layout: 1, name: 1});
+
+    const dashboardThatShouldBeReturnedStringified = JSON.parse(JSON.stringify(dashboardThatShouldBeReturned));
+    t.deepEqual(body.dashboard, dashboardThatShouldBeReturnedStringified);
+    t.is(statusCode, 200);
+});
+
+test.serial("POST /check-password-needed returns correct response and status code for existing dashboard with a password", async (t) => {
+    const userAndDashboardObj = {
+        json:
+            {
+                //  user that does not own the dashboard below
+                user:
+                    {
+                        'id': '6394753012ff010f4dfc3c13',
+                        'name': 'master',
+                        'email': "master@example.com"
+                    },
+                // id of dashboard existing in database that does not
+                // belong to the user above, is not shared and has a password.
+                'dashboardId' : '63da81dbd4d63e08b0edccc8'
+            }
+    };
+
+    const {body, statusCode} = await t.context.got.post(`dashboards/check-password-needed`, userAndDashboardObj);
+
+    t.is(body.success, true);
+
+    t.is(body.owner, '');
+    t.is(body.shared, true);
+    t.is(body.passwordNeeded, true);
+
+    t.is(statusCode, 200);
+});
 
 /*
- * Tests for route POST /share-dashboard
- */
+* Tests for route POST /check-password
+*/
+test.serial("POST /check-password returns correct response and status code for non existing dashboard", async (t) => {
+    const dashboardWithNonExistingPasswordInDB = {
+        json: {
+            // non existing dashboardId in the database
+            dashboardId: "639475b812ff010f4dfc3c13",
+            // The password of the hypothesised non existing dashboard (can be whatever and
+            // is not used in the test)
+            password: "somePassword"
+        }
+    };
+
+    // response body of not found dashboard
+    const {body, statusCode} = await t.context.got.post(`dashboards/check-password`, dashboardWithNonExistingPasswordInDB);
+
+    t.is(body.status, 409);
+    t.is(body.message, 'The specified dashboard has not been found.')
+    t.is(statusCode, 200);
+
+})
+
+test.serial("POST /check-password returns correct response and status code for existing dashboard with non matching password", async (t) => {
+    const dashboardWithNonWrongPassword = {
+        json: {
+            // the dashboard id of an existing dashboard
+            dashboardId: "639475b812ff010f4dfc3c18",
+            // wrong password for the dashboard with the above id
+            password: "theWrongPasswordForThisDashboard"
+        }
+    };
+
+    // response body found dashboard with non matching password
+    const {body, statusCode} = await t.context.got.post(`dashboards/check-password`, dashboardWithNonWrongPassword);
+
+    t.is(body.success, true);
+    t.is(body.correctPassword, false);
+    t.is(statusCode, 200);
+})
+
+test.serial("POST /check-password returns correct response and status code for existing dashboard with matching password", async (t) => {
+    const dashboardToCheckPassword = {
+        json: {
+            // dashboard id of an existing dashboard
+            dashboardId: "639475b812ff010f4dfc3c18",
+            // password matching its hashed version in the database
+            password: "dashboard1"
+        }
+    };
+
+    const {body, statusCode} = await t.context.got.post(`dashboards/check-password`, dashboardToCheckPassword);
+
+    // Check the truth of the first two body parameters returned by the got request
+    t.is(body.success, true);
+    t.is(body.correctPassword, true);
+
+
+    // Check the other two body parameters returned by the got request
+    // Find the dashboard with the id specified some lines above
+    const dashboardFound = await dashboard.findOne(
+        {_id: mongoose.Types.ObjectId(dashboardToCheckPassword.json.dashboardId)}).select({_id: false});
+
+    //  Stringify turns the returned dashboard JSON object into a string with
+    //  the needed values only (the ones saved in the db)
+    //  Parse turns the string into a JSON object again
+    const dashboardOnlyTheFieldsNeeded = JSON.parse(JSON.stringify(dashboardFound));
+    t.is(body.owner, dashboardOnlyTheFieldsNeeded.owner);
+
+
+    const dashboardFieldsExpected =
+        {
+            name: dashboardOnlyTheFieldsNeeded.name, layout: dashboardOnlyTheFieldsNeeded.layout,
+            items: dashboardOnlyTheFieldsNeeded.items
+        };
+    // Check of the returned object fields in body
+    // and the expected dashboard fields dashboardOnlyTheFieldsNeeded
+    // have the same values
+    t.deepEqual(body.dashboard, dashboardFieldsExpected);
+    t.is(statusCode, 200);
+
+});
+
+    /*
+     * Tests for route POST /share-dashboard
+     */
 test.serial("POST /share-dashboard returns correct response and status code for a user's non existing dashboard", async (t) => {
     const mock_user = { id: "6394753012ff010f4dfc3c12", email: "admin@example.com", username: "admin"};
     const token = jwtSign(mock_user);
