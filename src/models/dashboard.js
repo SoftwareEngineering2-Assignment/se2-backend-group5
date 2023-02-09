@@ -44,7 +44,8 @@ const DashboardSchema = new mongoose.Schema(
       ref: 'User'
     },
     createdAt: {type: Date}
-  }
+  },
+  {minimize: false}
 );
 
 // Plugin for Mongoose that turns duplicate errors into regular Mongoose validation errors.
