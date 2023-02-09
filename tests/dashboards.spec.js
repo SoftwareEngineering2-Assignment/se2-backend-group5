@@ -149,6 +149,27 @@ test.serial('GET /dashboard returns correct response and status code for a speci
   t.is(statusCode, 401);
 });
 
+test.serial('GET /dashboard returns correct response and status code for a specific dashboard owned by an unauthorized user', async (t) => {
+  // request without authorization (no token used)
+  const {body, statusCode} = await t.context.got(`dashboards/dashboard`);
+
+  t.is(body.status, 403);
+  t.is(body.message, 'Authorization Error: token missing.');
+  t.is(statusCode, 403);
+});
+
+test.serial('GET /dashboard returns correct response and status code for a specific dashboard owned by an authorized user with expired token', async (t) => {
+  const mock_user = {username: 'user1', id: '6394758712ff010f4dfc3c15', email: 'user1@example.com'};
+
+  // jwt.sign instead of jwtSign to call the third argument (expiration)
+  // the token is expired 10 minutes before its creation
+  const token = sign(mock_user, process.env.SERVER_SECRET, { expiresIn: '-10s' });
+  const {body, statusCode} = await t.context.got(`dashboards/dashboard?token=${token}&id=639475b812ff010f4dfc3c21`);
+  t.is(body.status, 401);
+  t.is(body.message,  'TokenExpiredError');
+  t.is(statusCode, 401);
+});
+
 /*
  * Tests for route POST /check-password-needed
  */
