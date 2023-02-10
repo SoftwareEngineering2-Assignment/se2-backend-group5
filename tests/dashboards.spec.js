@@ -98,6 +98,17 @@ test.serial('GET /dashboard returns correct response and status code for a speci
 });
 
 /*
+ * Tests for middleware authorization.js
+ */
+test.serial('GET /dashboard returns correct response and status code for a specific dashboard owned by an unauthorized user', async (t) => {
+  // request without authorization (no token used)
+  const {body, statusCode} = await t.context.got('dashboards/dashboard');
+
+  t.is(body.status, 403);
+  t.is(body.message, 'Authorization Error: token missing.');
+  t.is(statusCode, 403);
+});
+/*
  * Tests for route POST /create-dashboard
  */
 test.serial('POST /create-dashboard returns correct response and status code for a new dashboard', async (t) => {
@@ -136,17 +147,8 @@ test.serial('GET /dashboard returns correct response and status code for a speci
   const token = sign(mock_user, process.env.SERVER_SECRET, { expiresIn: '-10s' });
   const {body, statusCode} = await t.context.got(`dashboards/dashboard?token=${token}&id=639475b812ff010f4dfc3c21`);
   t.is(body.status, 401);
-  t.is(body.message,  'TokenExpiredError');
+  t.is(body.message, 'TokenExpiredError');
   t.is(statusCode, 401);
-});
-
-test.serial('GET /dashboard returns correct response and status code for a specific dashboard owned by an unauthorized user', async (t) => {
-  // request without authorization (no token used)
-  const {body, statusCode} = await t.context.got(`dashboards/dashboard`);
-
-  t.is(body.status, 403);
-  t.is(body.message, 'Authorization Error: token missing.');
-  t.is(statusCode, 403);
 });
 
 /*
