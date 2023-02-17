@@ -42,23 +42,22 @@ test('should be successful', async (t) => {
 /*
  * Tests for route GET /dashboards
  */
-test.serial('GET /dashboards returns correct response and status code for existing dashboard name', async t => {
+test.serial('GET /dashboards returns correct response and status code for existing dashboard name', async (t) => {
   const mock_user = {username: 'user1', id: '6394758712ff010f4dfc3c15', email: 'user1@example.com'};
   const token = jwtSign(mock_user);
   
   const {body, statusCode} = await t.context.got(`dashboards/dashboards?token=${token}`, mock_user);
 
-
   const dashboardsExpected = await dashboard.find(
-        {owner: mongoose.Types.ObjectId(mock_user.id)}).select({id: 1, name: 1, views: 1});
+    {owner: mongoose.Types.ObjectId(mock_user.id)}
+  ).select({id: 1, name: 1, views: 1});
 
   t.is(body.success, true);
   t.is(dashboardsExpected._id, body.dashboards.id);
   t.is(dashboardsExpected.name, body.dashboards.name);
   t.is(dashboardsExpected.views, body.dashboards.views);
   t.is(statusCode, 200);
-})
-
+});
 
 /*
  * Tests for route GET /dashboard
@@ -90,7 +89,6 @@ test.serial('GET /dashboard returns correct response and status code for a speci
   t.is(statusCode, 200);
 });
 
-
 /*
  * Tests for route POST /create-dashboard
  */
@@ -98,38 +96,29 @@ test.serial('POST /create-dashboard returns correct response and status code for
   const mock_user = {username: 'user1', id: '6394758712ff010f4dfc3c15', email: 'user1@example.com'};
   const token = jwtSign(mock_user);
   // dashboard to be created
-  const newDashboard = {
-    json: {
-      name: 'dashboard7'
-    }
-  }
+  const newDashboard = {json: {name: 'dashboard7'}};
   const {body, statusCode} = await t.context.got.post(`dashboards/create-dashboard?token=${token}`, newDashboard);
   // Check if the response is as expected
   t.is(body.success, true);
-  t.is(statusCode, 200)
+  t.is(statusCode, 200);
 
   // Check if the new dashboard was actually saved in database
-  const dashboardSavedInBaseName = await dashboard.findOne({name: 'dashboard7'}).select({_id: false}).select({name: 1})
-  const dashboardSavedInBaseNameStr = JSON.parse(JSON.stringify(dashboardSavedInBaseName))
-  t.is(newDashboard.json.name, dashboardSavedInBaseNameStr.name)
+  const dashboardSavedInBaseName = await dashboard.findOne({name: 'dashboard7'}).select({_id: false}).select({name: 1});
+  const dashboardSavedInBaseNameStr = JSON.parse(JSON.stringify(dashboardSavedInBaseName));
+  t.is(newDashboard.json.name, dashboardSavedInBaseNameStr.name);
 });
 
 test.serial('POST /create-dashboard returns correct response and status code for a new dashboard with an existing name among their dashboards', async (t) => {
   const mock_user = {username: 'user1', id: '6394758712ff010f4dfc3c15', email: 'user1@example.com'};
   const token = jwtSign(mock_user);
   // dashboard to be created
-  const newDashboard = {
-    json: {
-      name: 'dashboard4'
-    }
-  }
+  const newDashboard = {json: {name: 'dashboard4'}};
   const {body, statusCode} = await t.context.got.post(`dashboards/create-dashboard?token=${token}`, newDashboard);
   // Check if the response is as expected
   t.is(body.status, 409);
-  t.is(body.message, 'A dashboard with that name already exists.')
-  t.is(statusCode, 200)
+  t.is(body.message, 'A dashboard with that name already exists.');
+  t.is(statusCode, 200);
 });
-
 
 /*
  * Tests for route POST /check-password-needed
