@@ -9,11 +9,13 @@ const listen = require('test-listen');
 const mongoose = require('mongoose');
 const app = require('../src/index');
 const {jwtSign} = require('../src/utilities/authentication/helpers');
+const {sign} = require('jsonwebtoken');
 const dashboard = require('../src/models/dashboard');
 const reset = require('../src/models/reset');
 const source = require('../src/models/source');
 const user = require('../src/models/user');
 const utils = require('./utils');
+
 
 test.before(async () => {
   const mongoUrl = process.env.MONGODB_URI;
@@ -45,7 +47,7 @@ test('should be successful', async (t) => {
 test.serial('GET /dashboards returns correct response and status code for existing dashboard name', async (t) => {
   const mock_user = {username: 'user1', id: '6394758712ff010f4dfc3c15', email: 'user1@example.com'};
   const token = jwtSign(mock_user);
-  
+
   const {body, statusCode} = await t.context.got(`dashboards/dashboards?token=${token}`, mock_user);
 
   const dashboardsExpected = await dashboard.find(
@@ -66,7 +68,7 @@ test.serial('GET /dashboard returns correct response and status code for a speci
   const mock_user = {username: 'master', id: '6394756112ff010f4dfc3c13', email: 'master@example.com'};
   const token = jwtSign(mock_user);
   const {body, statusCode} = await t.context.got(`dashboards/dashboard?token=${token}&id=639475b812ff010f4dfc3c20`);
-  
+
   const expectedSources = await source.findOne({owner: mongoose.Types.ObjectId(mock_user.id)})
     .select({_id: false}).select({name: 1});
 
@@ -96,6 +98,17 @@ test.serial('GET /dashboard returns correct response and status code for a speci
 });
 
 /*
+ * Tests for middleware authorization.js
+ */
+test.serial('GET /dashboard returns correct response and status code for a specific dashboard owned by an unauthorized user', async (t) => {
+  // request without authorization (no token used)
+  const {body, statusCode} = await t.context.got('dashboards/dashboard');
+
+  t.is(body.status, 403);
+  t.is(body.message, 'Authorization Error: token missing.');
+  t.is(statusCode, 403);
+});
+/*
  * Tests for route POST /create-dashboard
  */
 test.serial('POST /create-dashboard returns correct response and status code for a new dashboard', async (t) => {
@@ -124,6 +137,18 @@ test.serial('POST /create-dashboard returns correct response and status code for
   t.is(body.status, 409);
   t.is(body.message, 'A dashboard with that name already exists.');
   t.is(statusCode, 200);
+});
+
+test.serial('GET /dashboard returns correct response and status code for a specific dashboard owned by an authorized user with expired token', async (t) => {
+  const mock_user = {username: 'user1', id: '6394758712ff010f4dfc3c15', email: 'user1@example.com'};
+
+  // jwt.sign instead of jwtSign to call the third argument (expiration)
+  // the token is expired 10 minutes before its creation
+  const token = sign(mock_user, process.env.SERVER_SECRET, { expiresIn: '-10s' });
+  const {body, statusCode} = await t.context.got(`dashboards/dashboard?token=${token}&id=639475b812ff010f4dfc3c21`);
+  t.is(body.status, 401);
+  t.is(body.message, 'TokenExpiredError');
+  t.is(statusCode, 401);
 });
 
 /*
