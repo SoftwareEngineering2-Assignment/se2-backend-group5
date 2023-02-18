@@ -67,8 +67,8 @@ test.serial('GET /dashboard returns correct response and status code for a speci
   const token = jwtSign(mock_user);
   const {body, statusCode} = await t.context.got(`dashboards/dashboard?token=${token}&id=639475b812ff010f4dfc3c20`);
   
-  
-  const expectedSources = await source.findOne({owner: mongoose.Types.ObjectId(mock_user.id)}).select({_id: false}).select({name: 1});
+  const expectedSources = await source.findOne({owner: mongoose.Types.ObjectId(mock_user.id)})
+    .select({_id: false}).select({name: 1});
 
   t.assert(body.success);
   t.is(body.dashboard.id, '639475b812ff010f4dfc3c20');
