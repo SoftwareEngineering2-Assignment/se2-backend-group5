@@ -63,11 +63,17 @@ test.serial('GET /dashboards returns correct response and status code for existi
  * Tests for route GET /dashboard
  */
 test.serial('GET /dashboard returns correct response and status code for a specific dashboard owned by an authorized user', async (t) => {
-  const mock_user = {username: 'user1', id: '6394758712ff010f4dfc3c15', email: 'user1@example.com'};
+  const mock_user = {username: 'master', id: '6394756112ff010f4dfc3c13', email: 'master@example.com'};
   const token = jwtSign(mock_user);
-  const {body, statusCode} = await t.context.got(`dashboards/dashboard?token=${token}&id=639475b812ff010f4dfc3c21`);
+  const {body, statusCode} = await t.context.got(`dashboards/dashboard?token=${token}&id=639475b812ff010f4dfc3c20`);
+  
+  
+  const expectedSources = await source.findOne({owner: mongoose.Types.ObjectId(mock_user.id)}).select({_id: false}).select({name: 1});
+
   t.assert(body.success);
-  t.is(body.dashboard.id, '639475b812ff010f4dfc3c21');
+  t.is(body.dashboard.id, '639475b812ff010f4dfc3c20');
+  // only one source should be returned for this user
+  t.is(body.sources[0], expectedSources.name);
   t.is(statusCode, 200);
 });
 
