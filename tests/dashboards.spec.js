@@ -40,14 +40,40 @@ test('should be successful', async (t) => {
 });
 
 /*
+ * Tests for route GET /dashboards
+ */
+test.serial('GET /dashboards returns correct response and status code for existing dashboard name', async (t) => {
+  const mock_user = {username: 'user1', id: '6394758712ff010f4dfc3c15', email: 'user1@example.com'};
+  const token = jwtSign(mock_user);
+  
+  const {body, statusCode} = await t.context.got(`dashboards/dashboards?token=${token}`, mock_user);
+
+  const dashboardsExpected = await dashboard.find(
+    {owner: mongoose.Types.ObjectId(mock_user.id)}
+  ).select({id: 1, name: 1, views: 1});
+
+  t.is(body.success, true);
+  t.is(dashboardsExpected._id, body.dashboards.id);
+  t.is(dashboardsExpected.name, body.dashboards.name);
+  t.is(dashboardsExpected.views, body.dashboards.views);
+  t.is(statusCode, 200);
+});
+
+/*
  * Tests for route GET /dashboard
  */
 test.serial('GET /dashboard returns correct response and status code for a specific dashboard owned by an authorized user', async (t) => {
-  const mock_user = {username: 'user1', id: '6394758712ff010f4dfc3c15', email: 'user1@example.com'};
+  const mock_user = {username: 'master', id: '6394756112ff010f4dfc3c13', email: 'master@example.com'};
   const token = jwtSign(mock_user);
-  const {body, statusCode} = await t.context.got(`dashboards/dashboard?token=${token}&id=639475b812ff010f4dfc3c21`);
+  const {body, statusCode} = await t.context.got(`dashboards/dashboard?token=${token}&id=639475b812ff010f4dfc3c20`);
+  
+  const expectedSources = await source.findOne({owner: mongoose.Types.ObjectId(mock_user.id)})
+    .select({_id: false}).select({name: 1});
+
   t.assert(body.success);
-  t.is(body.dashboard.id, '639475b812ff010f4dfc3c21');
+  t.is(body.dashboard.id, '639475b812ff010f4dfc3c20');
+  // only one source should be returned for this user
+  t.is(body.sources[0], expectedSources.name);
   t.is(statusCode, 200);
 });
 
@@ -66,6 +92,37 @@ test.serial('GET /dashboard returns correct response and status code for a speci
   const {body, statusCode} = await t.context.got(`dashboards/dashboard?token=${token}&id=639475b812ff010f4dff3c20`);
   t.is(body.status, 409);
   t.is(body.message, 'The selected dashboard has not been found.');
+  t.is(statusCode, 200);
+});
+
+/*
+ * Tests for route POST /create-dashboard
+ */
+test.serial('POST /create-dashboard returns correct response and status code for a new dashboard', async (t) => {
+  const mock_user = {username: 'user1', id: '6394758712ff010f4dfc3c15', email: 'user1@example.com'};
+  const token = jwtSign(mock_user);
+  // dashboard to be created
+  const newDashboard = {json: {name: 'dashboard7'}};
+  const {body, statusCode} = await t.context.got.post(`dashboards/create-dashboard?token=${token}`, newDashboard);
+  // Check if the response is as expected
+  t.is(body.success, true);
+  t.is(statusCode, 200);
+
+  // Check if the new dashboard was actually saved in database
+  const dashboardSavedInBaseName = await dashboard.findOne({name: 'dashboard7'}).select({_id: false}).select({name: 1});
+  const dashboardSavedInBaseNameStr = JSON.parse(JSON.stringify(dashboardSavedInBaseName));
+  t.is(newDashboard.json.name, dashboardSavedInBaseNameStr.name);
+});
+
+test.serial('POST /create-dashboard returns correct response and status code for a new dashboard with an existing name among their dashboards', async (t) => {
+  const mock_user = {username: 'user1', id: '6394758712ff010f4dfc3c15', email: 'user1@example.com'};
+  const token = jwtSign(mock_user);
+  // dashboard to be created
+  const newDashboard = {json: {name: 'dashboard4'}};
+  const {body, statusCode} = await t.context.got.post(`dashboards/create-dashboard?token=${token}`, newDashboard);
+  // Check if the response is as expected
+  t.is(body.status, 409);
+  t.is(body.message, 'A dashboard with that name already exists.');
   t.is(statusCode, 200);
 });
 
